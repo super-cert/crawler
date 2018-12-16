@@ -103,7 +103,7 @@ def error_link(e,url):
 			files.write(str(url)+' ')
 			files.write(time.asctime()+' \n')
 
-def returnimg(rawhtml,url): # text 
+def returnimg(rawhtml,url,baseurl): # text 
 	
 	#bodyhtml = str(rawhtml).replace('(','\(').replace('\)','\)')
 	bodyhtml =str(rawhtml)
@@ -145,7 +145,12 @@ def returnimg(rawhtml,url): # text
 		for j in re.split(r'<a.+?href=\"(.+?)\"',i):
 			if j.endswith('.pdf'):
 				testdict['pdflist'].append(j)
-	testdict['relatedlist'] = [x for x in list(set(re.findall(r'<a.+?href=\"(.+?)\"',bodyhtml))) if not x in list(set(testdict['pdflist']+testdict['movielist']+testdict['txtlist']+testdict['imglist']))]
+	testdict['relatedurl'] = [x for x in list(set(re.findall(r'<a.+?href=\"(.+?)\"',bodyhtml))) if not x in list(set([baseurl]+testdict['pdflist']+testdict['movielist']+testdict['txtlist']+testdict['imglist']))]
+	for n,x in enumerate(testdict['relatedurl']):
+		if not baseurl in x:
+			testdict['relatedurl'][n]=baseurl+(x if x[0] == '/' else '/'+x)
+
+	#testdict['relatedurl'] = [x for x in list(set(re.findall(r'<a.+?href=\"(.+?)\"',bodyhtml))) if not x in list(set([baseurl]+testdict['pdflist']+testdict['movielist']+testdict['txtlist']+testdict['imglist']))]
 	testdict['html'] = str(bodyhtml)
 	return testdict
 '''
@@ -184,45 +189,45 @@ class NotSplitError(Exception):	# Exception을 상속받아서 에러 전달
 	def __init__(self):
 		super().__init__('not split!!!')
 		
-def returnyoutube(html):
+# def returnyoutube(html):
 	
-	return list(set([x.group(1) for x in re.finditer("<a.+?href=\"(https:\/\/(((www\.)?youtube\.com)|(youtu\.be)).+?)\">",html)]))
-	# return list(set(re.findall(r'<a href="(https:\/\/youtu\.be.+?)">',str(html))))
-	# +list(set(re.findall(r'<iframe.+?src=\"(.+?)\".+?>.+?/iframe>',str(html))))
-	# +list(set(re.findall(r'<a.+?href="(https:\/\/youtube\.com.+?)">',str(html))))
+# 	return list(set([x.group(1) for x in re.finditer("<a.+?href=\"(https:\/\/(((www\.)?youtube\.com)|(youtu\.be)).+?)\">",html)]))
+# 	# return list(set(re.findall(r'<a href="(https:\/\/youtu\.be.+?)">',str(html))))
+# 	# +list(set(re.findall(r'<iframe.+?src=\"(.+?)\".+?>.+?/iframe>',str(html))))
+# 	# +list(set(re.findall(r'<a.+?href="(https:\/\/youtube\.com.+?)">',str(html))))
 
 	
-def returnrelatedurl(html,baseurl):
-	rmlist = ['jpg','jpeg','bmp','gif','png','pdf','mp4','xml']
-	test = list(set(re.findall(r'<a.+?href=\"(.+?)\".+?/a>',html)))
-	for n, i in enumerate(test):
-		if not 'http' in i and not 'https' in i:
-			test[n] = baseurl+i
+# def returnrelatedurl(html,baseurl):
+# 	rmlist = ['jpg','jpeg','bmp','gif','png','pdf','mp4','xml']
+# 	test = list(set(re.findall(r'<a.+?href=\"(.+?)\".+?/a>',html)))
+# 	for n, i in enumerate(test):
+# 		if not 'http' in i and not 'https' in i:
+# 			test[n] = baseurl+i
 
-	return list(filter(lambda x: not x.split('.')[-1] in rmlist, test))
+# 	return list(filter(lambda x: not x.split('.')[-1] in rmlist, test))
 	
 
-def returntxt(html):
-	try:
-		return list(set(re.findall(r'<a.+?href=\"(.+?\.[txt|doc|docx|ppt|hwp|xslx|csv])\"', html)))
-	except IndexError as e:
-		if 'list index out of range' in str(e):
-			return None
-		else:
-			print(e)
+# def returntxt(html):
+# 	try:
+# 		return list(set(re.findall(r'<a.+?href=\"(.+?\.[txt|doc|docx|ppt|hwp|xslx|csv])\"', html)))
+# 	except IndexError as e:
+# 		if 'list index out of range' in str(e):
+# 			return None
+# 		else:
+# 			print(e)
 
-def returnpdf(html,baseurl):
-	try:
-		test = list(set(re.findall(r'<a.+?href=\"(.+?\.pdf)\"', html)))
-		for n, i in enumerate(test):
-			if not 'http' in i and not 'https' in i:
-				test[n] = baseurl+i		
-		return test
-	except IndexError as e:
-		if 'list index out of range' in str(e):
-			return None
-		else:
-			print(e)
+# def returnpdf(html,baseurl):
+# 	try:
+# 		test = list(set(re.findall(r'<a.+?href=\"(.+?\.pdf)\"', html)))
+# 		for n, i in enumerate(test):
+# 			if not 'http' in i and not 'https' in i:
+# 				test[n] = baseurl+i		
+# 		return test
+# 	except IndexError as e:
+# 		if 'list index out of range' in str(e):
+# 			return None
+# 		else:
+# 			print(e)
 
 
 def requesturl(link):
